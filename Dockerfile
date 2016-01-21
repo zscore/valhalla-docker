@@ -1,13 +1,15 @@
-FROM phusion/baseimage:0.9.17
+FROM phusion/baseimage:0.9.18
 
 CMD ["/sbin/my_init"]
 EXPOSE 8002
+
 
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
   apt-get update && apt-get install -y \
   autoconf \
   automake \
   libtool \
+  cmake \
   make \
   gcc-4.9 \
   g++-4.9 \
@@ -26,7 +28,19 @@ RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
   libgeos-dev \
   libgeos++-dev \
   libcurl4-openssl-dev \
-  wget
+  wget \
+  build-essential \
+  unzip
+
+RUN git clone https://github.com/jbeder/yaml-cpp && \
+  cd yaml-cpp && \
+  mkdir build && \
+  cd build && \
+  cmake .. && \
+  make && \
+  make install && \
+  cd .. && \
+  rm -rf build
 
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90 && \
   update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
@@ -86,7 +100,8 @@ RUN cd tyr && ./autogen.sh && ./configure CPPFLAGS=-DBOOST_SPIRIT_THREADSAFE && 
 RUN ldconfig
 
 # Change this OSM extract to somewhere else if you like.
-RUN wget https://s3.amazonaws.com/metro-extracts.mapzen.com/london_england.osm.pbf
+RUN wget https://s3.amazonaws.com/metro-extracts.mapzen.com/chicago_illinois.osm.pbf
+
 
 RUN mkdir -p /data/valhalla
 ADD conf conf
